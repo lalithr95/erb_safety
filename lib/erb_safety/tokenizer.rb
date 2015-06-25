@@ -55,7 +55,7 @@ module ErbSafety
     end
 
     def tag_name
-      $1.downcase if /\<\s*([^\s]*)/mi =~ @parts[0]
+      $1.downcase if /\<\s*([^\s\>]*)/mi =~ @parts[0]
     end
 
     def attribute_name
@@ -86,7 +86,7 @@ module ErbSafety
     def unsafe_erb?(safe_methods = [])
       return false unless code = erb_code
 
-      names = safe_methods.map{|m| Regexp.escape(m)}.join("|")
+      names = Regexp.union(*safe_methods)
       return false if /\A(#{names})(\(|\s|\z)/mi === code
       return false if ESCAPE_JAVASCRIPT_CALL === code
       return false if TO_JSON_CALL === code
@@ -300,6 +300,7 @@ module ErbSafety
         elsif t.erb_end?
           @erb_stack -= 1
           if @erb_stack == 0
+            @tokens << @script
             @context = :text
           end
         end

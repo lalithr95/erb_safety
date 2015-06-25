@@ -1,6 +1,8 @@
 module ErbSafety
 
   class Error
+    attr_reader :token, :erb, :message
+
     def initialize(token, erb, message)
       @token = token
       @erb = erb
@@ -23,6 +25,7 @@ EOF
       @filename = filename
       @javascript_safe_helpers = options.delete(:javascript_safe_helpers) || []
       @html_safe_helpers = options.delete(:html_safe_helpers) || []
+      @data = options.delete(:data)
       @errors = nil
     end
 
