@@ -189,6 +189,7 @@ module ErbSafety
     HTML_COMMENT_TAG = /\A(\<!--.*?--\>)/mi
     HTML_TAG_START = /\A(\<(!DOCTYPE|[a-z0-9\:]+)[\s\n]*)/mi
     ERB_TAG = /\A(\<\%.*?\%\>)/mi
+    CDATA_TAG = /\A\<!\[CDATA\[/mi
 
     def token_html
       if HTML_TAG_WITHOUT_ATTRIBUTES =~ @next
@@ -217,6 +218,9 @@ module ErbSafety
       elsif HTML_TAG_START =~ @next
         @context = :attribute
         tokenize_part(:tag, $1)
+      elsif CDATA_TAG =~ @next
+        @context = :text
+        tokenize_part(:text, $1)
       else
         raise "malformed html: #{@next[0..30].inspect}"
       end
