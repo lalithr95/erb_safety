@@ -1,0 +1,2 @@
+module ErbSafety
+end
