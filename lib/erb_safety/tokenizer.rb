@@ -256,7 +256,7 @@ module ErbSafety
       elsif HTML_TAG_END =~ @next
         t = append($1)
         type = last.attribute('type')
-        if last.script_tag? && (type.nil? || /text\/javascript|text\/template/ =~ type)
+        if last.script_tag? && (type.nil? || /text\/javascript/ =~ type)
           @context = :script_tag
           @script = Script.new(@tokens.pop)
           @tokens << @script
