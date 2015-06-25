@@ -14,6 +14,7 @@ Found: #{@message}
 The unsafe interpolation is:
   #{@erb.parts.join.inspect}
 EOF
+    end
   end
 
   class Tester
@@ -62,17 +63,17 @@ EOF
             next unless part.is_a?(Token)
             part.parts.each do |erb|
               next unless erb.is_a?(Token)
-              if part.javascript_attribute? && erb.unsafe_erb?(@safe_javascript_helpers)
+              if part.javascript_attribute? && erb.unsafe_erb?(@javascript_safe_helpers)
                 @errors << Error.new(token, erb, "unsafe ERB tag inside html attribute")
-              elsif erb.html_unsafe_calls?(html_safe_helpers)
+              elsif erb.html_unsafe_calls?(@html_safe_helpers)
                 @errors << Error.new(token, erb, "unsafe use of html_safe inside html attribute")
               end
             end
           end
         end
-
-        @errors
       end
+
+      @errors
     end
   end
 end

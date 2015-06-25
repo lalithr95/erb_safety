@@ -5,7 +5,6 @@ module ErbSafety
   ESCAPE_JAVASCRIPT_CALL = /\Aj|escape_javascript[\(\s]/mi
   HTML_SAFE_CALL = /raw[\s\(]|\.html_safe/mi
   TO_JSON_CALL = /\.to_json(\.html_safe)?\z/mi
-  HTML_SAFE_CALL = /\.html_safe\z/mi
   RAW_JSON_CALL = /\Araw\s.*\.to_json\z/mi
   TO_INT_CALL = /\.to_i\z/mi
   ERB_JAVASCRIPT_BLOCK = /\<\%\=\s*javascript_tag.*do\s*\-?\%\>/mi
