@@ -1,15 +1,15 @@
 module ErbSafety
   JAVASCRIPT_TAG_NAME = /\A(define\z|context\z|eval\z|track\-click\z|bind(\-|\z)|on)/mi
-  ERB_RAW_INTERPOLATE = /\<\%\=\=\s*(.*?)\s*\-?\%\>/mi
-  ERB_INTERPOLATE = /\<\%\=\s*(.*?)\s*\-?\%\>/mi
-  ESCAPE_JAVASCRIPT_CALL = /\Aj|escape_javascript[\(\s]/mi
-  HTML_SAFE_CALL = /raw[\s\(]|\.html_safe/mi
-  TO_JSON_CALL = /\.to_json(\.html_safe)?\z/mi
-  RAW_JSON_CALL = /\Araw\s.*\.to_json\z/mi
-  TO_INT_CALL = /\.to_i\z/mi
-  ERB_JAVASCRIPT_BLOCK = /\<\%\=\s*javascript_tag.*do\s*\-?\%\>/mi
-  ERB_BLOCK = /\<\%(if\s.*|unless\s.*|while\s.*|when\s.*|.*do)\s*\-?\%\>/mi
-  ERB_END = /\<\%\-?\s*end\s*\-?\%\>/mi
+  ERB_RAW_INTERPOLATE = /\<\%\=\=\s*(.*?)\s*\-?\%\>/m
+  ERB_INTERPOLATE = /\<\%\=\s*(.*?)\s*\-?\%\>/m
+  ESCAPE_JAVASCRIPT_CALL = /\Aj|escape_javascript[\(\s]/m
+  HTML_SAFE_CALL = /raw[\s\(]|\.html_safe/m
+  TO_JSON_CALL = /\.to_json(\.html_safe)?\z/m
+  RAW_JSON_CALL = /\Araw\s.*\.to_json\z/m
+  TO_INT_CALL = /\.to_i\z/m
+  ERB_JAVASCRIPT_BLOCK = /\<\%\=\s*javascript_tag.*do\s*\-?\%\>/m
+  ERB_BLOCK = /\<\%(if\s.*|unless\s.*|while\s.*|when\s.*|.*do)\s*\-?\%\>/m
+  ERB_END = /\<\%\-?\s*end\s*\-?\%\>/m
 
   class Token
     attr_reader :type, :data, :parts
@@ -55,11 +55,11 @@ module ErbSafety
     end
 
     def tag_name
-      $1.downcase if /\<\s*([^\s\>]*)/mi =~ @parts[0]
+      $1.downcase if /\<\s*([^\s\>]*)/m =~ @parts[0]
     end
 
     def attribute_name
-      $1.downcase if /\s*([^\s\=]*)/mi =~ @parts[0]
+      $1.downcase if /\s*([^\s\=]*)/m =~ @parts[0]
     end
 
     def javascript_attribute?
@@ -87,7 +87,7 @@ module ErbSafety
       return false unless code = erb_code
 
       names = Regexp.union(*safe_methods)
-      return false if /\A(#{names})(\(|\s|\z)/mi === code
+      return false if /\A(#{names})(\(|\s|\z)/m === code
       return false if ESCAPE_JAVASCRIPT_CALL === code
       return false if TO_JSON_CALL === code
       return false if RAW_JSON_CALL === code
@@ -100,7 +100,7 @@ module ErbSafety
       return true if erb_raw_output?
       return false unless code = erb_code
 
-      names = unsafe_methods.map{|m| Regexp.escape(m)}.join("|")
+      names = Regexp.union(*unsafe_methods)
       return true if /\A(#{names})(\(|\s|\z)/mi === code
       return true if HTML_SAFE_CALL === code
 
@@ -186,9 +186,9 @@ module ErbSafety
 
     # document level elements
     HTML_TAG_WITHOUT_ATTRIBUTES = /\A(\<\s*(\/?\s*[a-z0-9\:]+|[a-z0-9\:]+|[a-z0-9\:]+\s*\/)\s*\>)/i
-    HTML_COMMENT_TAG = /\A(\<!--.*?--\>)/mi
+    HTML_COMMENT_TAG = /\A(\<!--.*?--\>)/m
     HTML_TAG_START = /\A(\<(!DOCTYPE|[a-z0-9\:]+)[\s\n]*)/mi
-    ERB_TAG = /\A(\<\%.*?\%\>)/mi
+    ERB_TAG = /\A(\<\%.*?\%\>)/m
     CDATA_TAG = /\A(\<!\[CDATA\[)/mi
 
     def token_html
@@ -227,11 +227,11 @@ module ErbSafety
     end
 
     # tag level elements
-    WHITESPACES = /\A([\s\n]+)/
+    WHITESPACES = /\A([\s\n]+)/m
     HTML_ATTRIBUTE_START = /\A([a-z0-9\:\-]+\s*(\=)?)/mi
-    SIMPLE_STRING = /\A(\"([^\<\"]*?)\"|\'([^\<\']*?)\')/mi
-    STRING_START = /\A([\"\'])/mi
-    HTML_TAG_END = /\A(\/?\s*\>)/mi
+    SIMPLE_STRING = /\A(\"([^\<\"]*?)\"|\'([^\<\']*?)\')/m
+    STRING_START = /\A([\"\'])/m
+    HTML_TAG_END = /\A(\/?\s*\>)/m
 
     def type_attribute(token)
       token.parts.each do |part|
@@ -260,7 +260,7 @@ module ErbSafety
       elsif HTML_TAG_END =~ @next
         t = append($1)
         type = last.attribute('type')
-        if last.script_tag? && (type.nil? || /text\/javascript/ =~ type)
+        if last.script_tag? && (type.nil? || /text\/javascript/mi =~ type)
           @context = :script_tag
           @script = Script.new(@tokens.pop)
           @tokens << @script
@@ -275,8 +275,8 @@ module ErbSafety
     end
 
     SCRIPT_TAG_END = /\A(\<\s*\/\s*script[^\>]*\>)/mi
-    SCRIPT_TEXT = /\A([^\<]+)/mi
-    LESS_THAN = /\A(\<)/mi
+    SCRIPT_TEXT = /\A([^\<]+)/m
+    LESS_THAN = /\A(\<)/m
 
     def token_script_tag
       if SCRIPT_TAG_END =~ @next
@@ -319,9 +319,9 @@ module ErbSafety
     end
 
     def token_string
-      t_STRING_END = /\A(#{@string_start})/mi
-      t_ESCAPED_STRING_END = /\A(\\#{@string_start})/mi
-      t_NON_SPECIAL_CHARS = /\A([^\<\\#{@string_start}]*)/mi
+      t_STRING_END = /\A(#{@string_start})/m
+      t_ESCAPED_STRING_END = /\A(\\#{@string_start})/m
+      t_NON_SPECIAL_CHARS = /\A([^\<\\#{@string_start}]*)/m
 
       if t_STRING_END =~ @next
         @context = :attribute
