@@ -1,5 +1,5 @@
 module ErbSafety
-  JAVASCRIPT_TAG_NAME = /\A(define\z|context\z|eval\z|track\-click\z|bind(\-|\z)|on|data\-define\z|data\-context\z|data\-eval\z|data\-bind(\-|\z))/mi
+  JAVASCRIPT_TAG_NAME = /\A(define\z|context\z|eval\z|track\-click\z|data\-track\-|bind(\-|\z)|on|data\-define\z|data\-context\z|data\-eval\z|data\-bind(\-|\z))/mi
   ERB_RAW_INTERPOLATE = /\<\%\=\=\s*(.*?)\s*\-?\%\>/m
   ERB_INTERPOLATE = /\<\%\=\s*(.*?)\s*\-?\%\>/m
   ESCAPE_JAVASCRIPT_CALL = /\Aj|escape_javascript[\(\s]/m
